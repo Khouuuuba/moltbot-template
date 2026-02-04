@@ -18,7 +18,8 @@ dockerfilePath = "Dockerfile"
 startCommand = "/app/scripts/start.sh"
 
 # Health check configuration
-healthcheckPath = "/health"
+# OpenClaw gateway responds on root path
+healthcheckPath = "/"
 healthcheckTimeout = 300  # 5 minutes for first build
 
 # Restart policy
