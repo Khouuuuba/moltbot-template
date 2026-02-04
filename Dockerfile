@@ -46,10 +46,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy built application from builder
+# Note: UI builds to dist/control-ui/ in recent versions
 COPY --from=builder /build/dist ./dist
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/package.json ./package.json
-COPY --from=builder /build/ui/dist ./ui/dist
 
 # Copy our startup scripts
 COPY scripts/ ./scripts/
