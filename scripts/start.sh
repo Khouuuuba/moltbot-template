@@ -106,7 +106,8 @@ echo "Starting Moltbot gateway..."
 echo ""
 
 # Run the gateway with proper signal handling
+# Use 0.0.0.0 to accept connections from Railway's load balancer
 exec node /app/dist/index.js gateway \
     --allow-unconfigured \
     --port "${PORT:-3000}" \
-    --bind lan
+    --bind 0.0.0.0
