@@ -21,7 +21,7 @@ WORKDIR /build
 # Clone Moltbot source
 # Pin to a specific commit for reproducible builds
 ARG MOLTBOT_VERSION=main
-RUN git clone --depth 1 --branch ${MOLTBOT_VERSION} https://github.com/openclaw/openclaw.git . && \
+RUN git clone --depth 1 --branch ${MOLTBOT_VERSION} https://github.com/clawdbot/clawdbot.git . && \
     rm -rf .git
 
 # Install dependencies (cached layer if pnpm-lock.yaml unchanged)
