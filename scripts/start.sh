@@ -1,0 +1,112 @@
+#!/bin/bash
+# ==============================================================================
+# Moltbot Startup Script
+# ==============================================================================
+# This script validates environment variables and starts the Moltbot gateway.
+# Exit codes:
+#   0 - Success
+#   1 - Missing required environment variable
+#   2 - Moltbot failed to start
+# ==============================================================================
+
+set -e
+
+echo "=================================================="
+echo "  Moltbot on Primis"
+echo "  Starting gateway..."
+echo "=================================================="
+echo ""
+
+# ==============================================================================
+# Validate Environment Variables
+# ==============================================================================
+
+validate_env() {
+    local var_name=$1
+    local var_value=${!var_name}
+    
+    if [ -z "$var_value" ]; then
+        return 1
+    fi
+    return 0
+}
+
+mask_secret() {
+    local secret=$1
+    if [ ${#secret} -lt 12 ]; then
+        echo "***"
+    else
+        echo "${secret:0:4}...${secret: -4}"
+    fi
+}
+
+# Check for AI provider key (at least one required)
+HAS_AI_KEY=false
+
+if validate_env "ANTHROPIC_API_KEY"; then
+    echo "✓ Anthropic API key configured: $(mask_secret "$ANTHROPIC_API_KEY")"
+    HAS_AI_KEY=true
+fi
+
+if validate_env "OPENAI_API_KEY"; then
+    echo "✓ OpenAI API key configured: $(mask_secret "$OPENAI_API_KEY")"
+    HAS_AI_KEY=true
+fi
+
+if [ "$HAS_AI_KEY" = false ]; then
+    echo ""
+    echo "❌ ERROR: No AI provider configured!"
+    echo "   Set either ANTHROPIC_API_KEY or OPENAI_API_KEY"
+    echo ""
+    exit 1
+fi
+
+# Check for channel tokens (at least one recommended)
+HAS_CHANNEL=false
+
+if validate_env "TELEGRAM_BOT_TOKEN"; then
+    echo "✓ Telegram configured: $(mask_secret "$TELEGRAM_BOT_TOKEN")"
+    HAS_CHANNEL=true
+fi
+
+if validate_env "DISCORD_BOT_TOKEN"; then
+    echo "✓ Discord configured: $(mask_secret "$DISCORD_BOT_TOKEN")"
+    HAS_CHANNEL=true
+fi
+
+if validate_env "SLACK_BOT_TOKEN"; then
+    echo "✓ Slack configured: $(mask_secret "$SLACK_BOT_TOKEN")"
+    HAS_CHANNEL=true
+fi
+
+if [ "$HAS_CHANNEL" = false ]; then
+    echo ""
+    echo "⚠️  WARNING: No chat channels configured!"
+    echo "   Set TELEGRAM_BOT_TOKEN or DISCORD_BOT_TOKEN for chat functionality"
+    echo "   (Gateway will still start for API-only usage)"
+    echo ""
+fi
+
+# ==============================================================================
+# Show Configuration
+# ==============================================================================
+
+echo ""
+echo "Configuration:"
+echo "  PORT: ${PORT:-3000}"
+echo "  STATE_DIR: ${CLAWDBOT_STATE_DIR:-/data}"
+echo "  NODE_OPTIONS: ${NODE_OPTIONS:-(default)}"
+echo ""
+
+# ==============================================================================
+# Start Moltbot Gateway
+# ==============================================================================
+
+echo "Starting Moltbot gateway..."
+echo ""
+
+# Run the gateway with proper signal handling
+exec node /app/dist/index.js gateway \
+    --allow-unconfigured \
+    --port "${PORT:-3000}" \
+    --bind lan

@@ -1,0 +1,22 @@
+# Environment files (contain secrets)
+.env
+.env.local
+.env.production
+
+# Node modules (if any local deps added)
+node_modules/
+
+# Docker volumes
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/

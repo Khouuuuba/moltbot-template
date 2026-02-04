@@ -1,0 +1,37 @@
+# ==============================================================================
+# Railway Configuration for Moltbot
+# ==============================================================================
+# This file configures how Railway builds and deploys Moltbot.
+# Docs: https://docs.railway.app/reference/config-as-code
+# ==============================================================================
+
+[build]
+# Build using our optimized Dockerfile
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+# Build arguments (optional version pinning)
+# buildArgs = { MOLTBOT_VERSION = "main" }
+
+[deploy]
+# Start command (uses our startup script)
+startCommand = "/app/scripts/start.sh"
+
+# Health check configuration
+healthcheckPath = "/health"
+healthcheckTimeout = 300  # 5 minutes for first build
+
+# Restart policy
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5
+
+# Resource limits (Railway Pro required for custom limits)
+# numReplicas = 1
+
+[env]
+# Default environment variables (can be overridden in Railway dashboard)
+NODE_ENV = "production"
+CLAWDBOT_STATE_DIR = "/data"
+CLAWDBOT_PREFER_PNPM = "1"
+NODE_OPTIONS = "--max-old-space-size=1536"
+PORT = "3000"
