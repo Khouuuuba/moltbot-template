@@ -119,22 +119,12 @@ CONFIG_FILE="${OPENCLAW_STATE_DIR:-/data}/openclaw.json"
 mkdir -p "$(dirname "$CONFIG_FILE")"
 
 # Build config JSON with correct structure
-# - plugins.slots.memory = "none" disables memory-core requirement
-# - plugins.entries.telegram.enabled = true explicitly enables the channel
+# - gateway.mode = local for container deployment
+# - channels.telegram with botToken triggers auto-enable
 cat > "$CONFIG_FILE" << EOF
 {
   "gateway": {
     "mode": "local"
-  },
-  "plugins": {
-    "slots": {
-      "memory": "none"
-    },
-    "entries": {
-      "telegram": {
-        "enabled": true
-      }
-    }
   },
   "channels": {
     "telegram": {

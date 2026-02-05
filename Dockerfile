@@ -51,6 +51,9 @@ COPY --from=builder /build/dist ./dist
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/package.json ./package.json
 
+# CRITICAL: Copy extensions directory (telegram, discord, etc. plugins)
+COPY --from=builder /build/extensions ./extensions
+
 # Copy our startup scripts
 COPY scripts/ ./scripts/
 RUN chmod +x ./scripts/*.sh
