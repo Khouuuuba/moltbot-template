@@ -105,6 +105,10 @@ echo ""
 echo "Starting Moltbot gateway..."
 echo ""
 
+# Generate a gateway token if not provided
+export OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo 'primis-gateway-token')}"
+echo "  GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
+
 # Run the gateway with proper signal handling
 # Use "lan" to accept connections from Railway's load balancer
 exec node /app/dist/index.js gateway \
