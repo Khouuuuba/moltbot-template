@@ -113,19 +113,23 @@ echo "  GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
 echo ""
 echo "Initializing OpenClaw configuration..."
 
-# Set state dir explicitly - OpenClaw uses this to find config
-export OPENCLAW_STATE_DIR="${CLAWDBOT_STATE_DIR:-/data}"
+# Set BOTH state dir variables explicitly - OpenClaw checks both
+export OPENCLAW_STATE_DIR="/data"
+export CLAWDBOT_STATE_DIR="/data"
+
+# CRITICAL: Set explicit config path - this is the most reliable method
+export OPENCLAW_CONFIG_PATH="/data/openclaw.json"
+
 echo "  OPENCLAW_STATE_DIR: $OPENCLAW_STATE_DIR"
+echo "  OPENCLAW_CONFIG_PATH: $OPENCLAW_CONFIG_PATH"
 
-# Create proper OpenClaw config file
-# Bot token comes from TELEGRAM_BOT_TOKEN env var (not in config)
-# Only dmPolicy and allowFrom need to be in config
-CONFIG_FILE="${OPENCLAW_STATE_DIR}/openclaw.json"
-mkdir -p "$(dirname "$CONFIG_FILE")"
+# Create config directory
+mkdir -p /data
 
-# CRITICAL: Do NOT put botToken in config - let env var handle it
-# Only access control settings go in config
-cat > "$CONFIG_FILE" << 'CONFIGEOF'
+# Create the OpenClaw config file
+# Bot token is read from TELEGRAM_BOT_TOKEN env var automatically
+# dmPolicy and allowFrom control access
+cat > /data/openclaw.json << 'CONFIGEOF'
 {
   "gateway": {
     "mode": "local"
@@ -139,18 +143,25 @@ cat > "$CONFIG_FILE" << 'CONFIGEOF'
 }
 CONFIGEOF
 
-echo "✓ Config written to $CONFIG_FILE"
+echo "✓ Config written to /data/openclaw.json"
 echo "Config contents:"
-cat "$CONFIG_FILE"
+cat /data/openclaw.json
 echo ""
 
 # Verify config can be parsed (basic JSON check)
-if node -e "JSON.parse(require('fs').readFileSync('$CONFIG_FILE'))" 2>/dev/null; then
+if node -e "JSON.parse(require('fs').readFileSync('/data/openclaw.json'))" 2>/dev/null; then
   echo "✓ Config JSON is valid"
 else
   echo "❌ Config JSON is invalid!"
   exit 1
 fi
+
+# Double-check the env vars are exported
+echo ""
+echo "Environment check:"
+echo "  OPENCLAW_STATE_DIR=$OPENCLAW_STATE_DIR"
+echo "  OPENCLAW_CONFIG_PATH=$OPENCLAW_CONFIG_PATH"
+echo "  TELEGRAM_BOT_TOKEN=$(echo $TELEGRAM_BOT_TOKEN | head -c 10)..."
 echo ""
 
 # Create required directories
@@ -162,7 +173,14 @@ echo ""
 
 # Run the gateway with proper signal handling
 # Use "lan" to accept connections from Railway's load balancer
+# Enable verbose logging to debug config loading issues
+export OPENCLAW_VERBOSE=1
+
+echo "Starting gateway with:"
+echo "  Config: $OPENCLAW_CONFIG_PATH"
+echo "  State: $OPENCLAW_STATE_DIR"
+echo ""
+
 exec node /app/dist/index.js gateway \
-    --allow-unconfigured \
     --port "${PORT:-3000}" \
     --bind lan
