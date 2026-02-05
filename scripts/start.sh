@@ -113,31 +113,44 @@ echo "  GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
 echo ""
 echo "Initializing OpenClaw configuration..."
 
-# Create proper OpenClaw config file directly
-# Use the correct config structure: channels.telegram, not telegram
-CONFIG_FILE="${OPENCLAW_STATE_DIR:-/data}/openclaw.json"
+# Set state dir explicitly - OpenClaw uses this to find config
+export OPENCLAW_STATE_DIR="${CLAWDBOT_STATE_DIR:-/data}"
+echo "  OPENCLAW_STATE_DIR: $OPENCLAW_STATE_DIR"
+
+# Create proper OpenClaw config file
+# Bot token comes from TELEGRAM_BOT_TOKEN env var (not in config)
+# Only dmPolicy and allowFrom need to be in config
+CONFIG_FILE="${OPENCLAW_STATE_DIR}/openclaw.json"
 mkdir -p "$(dirname "$CONFIG_FILE")"
 
-# Build config JSON with correct structure
-# - gateway.mode = local for container deployment
-# - channels.telegram with open DM policy requires allowFrom: ["*"]
-cat > "$CONFIG_FILE" << EOF
+# CRITICAL: Do NOT put botToken in config - let env var handle it
+# Only access control settings go in config
+cat > "$CONFIG_FILE" << 'CONFIGEOF'
 {
   "gateway": {
     "mode": "local"
   },
   "channels": {
     "telegram": {
-      "botToken": "${TELEGRAM_BOT_TOKEN}",
       "dmPolicy": "open",
       "allowFrom": ["*"]
     }
   }
 }
-EOF
+CONFIGEOF
 
 echo "✓ Config written to $CONFIG_FILE"
+echo "Config contents:"
 cat "$CONFIG_FILE"
+echo ""
+
+# Verify config can be parsed (basic JSON check)
+if node -e "JSON.parse(require('fs').readFileSync('$CONFIG_FILE'))" 2>/dev/null; then
+  echo "✓ Config JSON is valid"
+else
+  echo "❌ Config JSON is invalid!"
+  exit 1
+fi
 echo ""
 
 # Create required directories
