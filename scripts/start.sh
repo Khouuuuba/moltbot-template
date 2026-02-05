@@ -109,9 +109,21 @@ echo ""
 export OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo 'primis-gateway-token')}"
 echo "  GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
 
-# Run doctor --fix to enable configured channels
+# Initialize OpenClaw config
 echo ""
-echo "Enabling configured channels..."
+echo "Initializing OpenClaw configuration..."
+
+# Set gateway mode to local
+node /app/dist/index.js config set gateway.mode local 2>/dev/null || true
+
+# Enable Telegram channel if token is provided
+if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+    echo "Enabling Telegram channel..."
+    node /app/dist/index.js channels enable telegram 2>/dev/null || true
+fi
+
+# Run doctor --fix to apply all fixes
+echo "Running doctor --fix..."
 node /app/dist/index.js doctor --fix --yes 2>/dev/null || true
 echo ""
 
