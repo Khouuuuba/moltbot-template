@@ -109,6 +109,12 @@ echo ""
 export OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo 'primis-gateway-token')}"
 echo "  GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
 
+# Run doctor --fix to enable configured channels
+echo ""
+echo "Enabling configured channels..."
+node /app/dist/index.js doctor --fix --yes 2>/dev/null || true
+echo ""
+
 # Run the gateway with proper signal handling
 # Use "lan" to accept connections from Railway's load balancer
 exec node /app/dist/index.js gateway \
