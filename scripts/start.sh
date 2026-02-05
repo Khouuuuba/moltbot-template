@@ -114,27 +114,21 @@ echo ""
 echo "Initializing OpenClaw configuration..."
 
 # Create proper OpenClaw config file directly
-# Telegram is a built-in channel, not a plugin - configure it via config file
+# Use the correct config structure: channels.telegram, not telegram
 CONFIG_FILE="${OPENCLAW_STATE_DIR:-/data}/openclaw.json"
 mkdir -p "$(dirname "$CONFIG_FILE")"
 
-# Build config JSON
+# Build config JSON with correct structure
 cat > "$CONFIG_FILE" << EOF
 {
   "gateway": {
-    "mode": "local",
-    "auth": {
-      "type": "token",
-      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    "mode": "local"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "${TELEGRAM_BOT_TOKEN}"
     }
-  },
-  "telegram": {
-    "enabled": true,
-    "botToken": "${TELEGRAM_BOT_TOKEN}"
-  },
-  "ai": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-20250514"
   }
 }
 EOF
