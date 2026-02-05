@@ -120,7 +120,7 @@ mkdir -p "$(dirname "$CONFIG_FILE")"
 
 # Build config JSON with correct structure
 # - gateway.mode = local for container deployment
-# - channels.telegram with botToken and open DM policy (no pairing required)
+# - channels.telegram with open DM policy requires allowFrom: ["*"]
 cat > "$CONFIG_FILE" << EOF
 {
   "gateway": {
@@ -129,7 +129,8 @@ cat > "$CONFIG_FILE" << EOF
   "channels": {
     "telegram": {
       "botToken": "${TELEGRAM_BOT_TOKEN}",
-      "dmPolicy": "open"
+      "dmPolicy": "open",
+      "allowFrom": ["*"]
     }
   }
 }
