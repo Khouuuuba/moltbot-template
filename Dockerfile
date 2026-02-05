@@ -46,13 +46,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy built application from builder
-# Note: UI builds to dist/control-ui/ in recent versions
 COPY --from=builder /build/dist ./dist
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/package.json ./package.json
 
 # CRITICAL: Copy extensions directory (telegram, discord, etc. plugins)
 COPY --from=builder /build/extensions ./extensions
+
+# CRITICAL: Copy docs/templates directory (required for workspace init)
+COPY --from=builder /build/docs ./docs
 
 # Copy our startup scripts
 COPY scripts/ ./scripts/
