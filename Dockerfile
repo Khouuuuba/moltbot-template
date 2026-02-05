@@ -32,6 +32,9 @@ ENV CLAWDBOT_A2UI_SKIP_MISSING=1
 ENV CLAWDBOT_PREFER_PNPM=1
 RUN pnpm build && pnpm ui:install && pnpm ui:build
 
+# Install Telegram plugin
+RUN node dist/index.js plugins install telegram || echo "Plugin install attempted"
+
 # ==============================================================================
 # Stage 2: Runtime - Minimal production image
 # ==============================================================================

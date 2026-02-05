@@ -113,18 +113,23 @@ echo "  GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
 echo ""
 echo "Initializing OpenClaw configuration..."
 
+# Install Telegram plugin first
+echo "Installing Telegram plugin..."
+node /app/dist/index.js plugins install telegram 2>&1 || echo "Plugin install completed"
+
 # Set gateway mode to local
+echo "Setting gateway mode..."
 node /app/dist/index.js config set gateway.mode local 2>/dev/null || true
 
 # Enable Telegram channel if token is provided
 if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
     echo "Enabling Telegram channel..."
-    node /app/dist/index.js channels enable telegram 2>/dev/null || true
+    node /app/dist/index.js channels enable telegram 2>&1 || echo "Channel enable completed"
 fi
 
 # Run doctor --fix to apply all fixes
 echo "Running doctor --fix..."
-node /app/dist/index.js doctor --fix --yes 2>/dev/null || true
+node /app/dist/index.js doctor --fix --yes 2>&1 || echo "Doctor fix completed"
 echo ""
 
 # Run the gateway with proper signal handling
