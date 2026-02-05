@@ -113,23 +113,41 @@ echo "  GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
 echo ""
 echo "Initializing OpenClaw configuration..."
 
-# Install Telegram plugin first
-echo "Installing Telegram plugin..."
-node /app/dist/index.js plugins install telegram 2>&1 || echo "Plugin install completed"
+# Create proper OpenClaw config file directly
+# Telegram is a built-in channel, not a plugin - configure it via config file
+CONFIG_FILE="${OPENCLAW_STATE_DIR:-/data}/openclaw.json"
+mkdir -p "$(dirname "$CONFIG_FILE")"
 
-# Set gateway mode to local
-echo "Setting gateway mode..."
-node /app/dist/index.js config set gateway.mode local 2>/dev/null || true
+# Build config JSON
+cat > "$CONFIG_FILE" << EOF
+{
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "type": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "telegram": {
+    "enabled": true,
+    "botToken": "${TELEGRAM_BOT_TOKEN}"
+  },
+  "ai": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514"
+  }
+}
+EOF
 
-# Enable Telegram channel if token is provided
-if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
-    echo "Enabling Telegram channel..."
-    node /app/dist/index.js channels enable telegram 2>&1 || echo "Channel enable completed"
-fi
+echo "✓ Config written to $CONFIG_FILE"
+cat "$CONFIG_FILE"
+echo ""
 
-# Run doctor --fix to apply all fixes
-echo "Running doctor --fix..."
-node /app/dist/index.js doctor --fix --yes 2>&1 || echo "Doctor fix completed"
+# Create required directories
+mkdir -p /data/agents/main/sessions
+mkdir -p /data/credentials
+chmod 700 /data
+
 echo ""
 
 # Run the gateway with proper signal handling
