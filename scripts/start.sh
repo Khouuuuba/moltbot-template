@@ -136,6 +136,7 @@ cat > /data/openclaw.json << 'CONFIGEOF'
   },
   "channels": {
     "telegram": {
+      "enabled": true,
       "dmPolicy": "open",
       "allowFrom": ["*"]
     }
