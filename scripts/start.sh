@@ -170,6 +170,23 @@ mkdir -p /data/agents/main/sessions
 mkdir -p /data/credentials
 chmod 700 /data
 
+# ==============================================================================
+# Inject Skills/Knowledge into Workspace
+# ==============================================================================
+# If CLAWDBOT_SYSTEM_PROMPT is set, write it to USER.md in the workspace
+# This gets included in the agent's context automatically
+WORKSPACE_DIR="/data/agents/main"
+mkdir -p "$WORKSPACE_DIR"
+
+if [ -n "$CLAWDBOT_SYSTEM_PROMPT" ]; then
+    echo "✓ Injecting custom knowledge/skills into workspace..."
+    echo "$CLAWDBOT_SYSTEM_PROMPT" > "$WORKSPACE_DIR/USER.md"
+    echo "  Written to: $WORKSPACE_DIR/USER.md"
+    echo "  Content preview: $(echo "$CLAWDBOT_SYSTEM_PROMPT" | head -c 100)..."
+else
+    echo "  No custom skills/knowledge to inject"
+fi
+
 echo ""
 
 # Run the gateway with proper signal handling
