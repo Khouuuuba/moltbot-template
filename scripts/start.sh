@@ -129,10 +129,19 @@ mkdir -p /data
 # Create the OpenClaw config file
 # Bot token is read from TELEGRAM_BOT_TOKEN env var automatically
 # dmPolicy and allowFrom control access
-cat > /data/openclaw.json << 'CONFIGEOF'
+# Model defaults to claude-sonnet-4-5 (can be overridden via OPENCLAW_MODEL env var)
+MODEL="${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
+echo "Using model: $MODEL"
+
+cat > /data/openclaw.json << CONFIGEOF
 {
   "gateway": {
     "mode": "local"
+  },
+  "agents": {
+    "defaults": {
+      "model": "$MODEL"
+    }
   },
   "channels": {
     "telegram": {
@@ -197,6 +206,15 @@ export OPENCLAW_VERBOSE=1
 echo "Starting gateway with:"
 echo "  Config: $OPENCLAW_CONFIG_PATH"
 echo "  State: $OPENCLAW_STATE_DIR"
+echo ""
+
+# ==============================================================================
+# Enable Channels via Doctor
+# ==============================================================================
+# The clawdbot framework detects configured channels but doesn't auto-enable them.
+# Running "doctor --fix" applies pending changes (e.g., enabling Telegram plugin).
+echo "Running doctor --fix to enable configured channels..."
+node /app/dist/index.js doctor --fix 2>&1 || echo "⚠️  Doctor --fix returned non-zero (may be ok on first run)"
 echo ""
 
 exec node /app/dist/index.js gateway \
