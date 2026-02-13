@@ -129,19 +129,13 @@ mkdir -p /data
 # Create the OpenClaw config file
 # Bot token is read from TELEGRAM_BOT_TOKEN env var automatically
 # dmPolicy and allowFrom control access
-# Model defaults to claude-sonnet-4-5 (can be overridden via OPENCLAW_MODEL env var)
-MODEL="${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
-echo "Using model: $MODEL"
+# Model: DO NOT set agents.defaults.model — the framework expects an object, not a string.
+# The framework defaults to Opus which is what we want.
 
-cat > /data/openclaw.json << CONFIGEOF
+cat > /data/openclaw.json << 'CONFIGEOF'
 {
   "gateway": {
     "mode": "local"
-  },
-  "agents": {
-    "defaults": {
-      "model": "$MODEL"
-    }
   },
   "channels": {
     "telegram": {
