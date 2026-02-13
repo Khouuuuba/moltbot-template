@@ -220,6 +220,42 @@ echo "Running doctor --fix to enable configured channels..."
 node /app/dist/index.js doctor --fix 2>&1 || echo "⚠️  Doctor --fix returned non-zero (may be ok on first run)"
 echo ""
 
+# ==============================================================================
+# Fix: Force-enable channel plugins after doctor
+# ==============================================================================
+# CRITICAL: doctor --fix adds plugins.entries.telegram.enabled = false by default.
+# We must override this to true for any channels we want active.
+echo "Ensuring channel plugins are enabled in config..."
+node -e "
+const fs = require('fs');
+const cfg = JSON.parse(fs.readFileSync('/data/openclaw.json', 'utf8'));
+if (!cfg.plugins) cfg.plugins = {};
+if (!cfg.plugins.entries) cfg.plugins.entries = {};
+let changed = false;
+if (cfg.channels?.telegram) {
+  cfg.plugins.entries.telegram = { enabled: true };
+  changed = true;
+  console.log('  ✓ Telegram plugin force-enabled');
+}
+if (cfg.channels?.discord) {
+  cfg.plugins.entries.discord = { enabled: true };
+  changed = true;
+  console.log('  ✓ Discord plugin force-enabled');
+}
+if (cfg.channels?.slack) {
+  cfg.plugins.entries.slack = { enabled: true };
+  changed = true;
+  console.log('  ✓ Slack plugin force-enabled');
+}
+if (changed) {
+  fs.writeFileSync('/data/openclaw.json', JSON.stringify(cfg, null, 2));
+  console.log('  ✓ Config updated');
+} else {
+  console.log('  No channel plugins to enable');
+}
+"
+echo ""
+
 exec node /app/dist/index.js gateway \
     --port "${PORT:-3000}" \
     --bind lan
