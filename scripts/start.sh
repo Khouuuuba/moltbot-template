@@ -132,20 +132,29 @@ mkdir -p /data
 # Model: DO NOT set agents.defaults.model — the framework expects an object, not a string.
 # The framework defaults to Opus which is what we want.
 
-cat > /data/openclaw.json << 'CONFIGEOF'
-{
-  "gateway": {
-    "mode": "local"
-  },
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "dmPolicy": "open",
-      "allowFrom": ["*"]
-    }
-  }
+# Build config JSON dynamically — botToken MUST be inside the config for the latest OpenClaw
+# (env var alone is not enough; the framework reads it from the config)
+node -e "
+const cfg = {
+  gateway: { mode: 'local' },
+  channels: {}
+};
+if (process.env.TELEGRAM_BOT_TOKEN) {
+  cfg.channels.telegram = {
+    enabled: true,
+    botToken: process.env.TELEGRAM_BOT_TOKEN,
+    dmPolicy: 'open',
+    allowFrom: ['*']
+  };
 }
-CONFIGEOF
+if (process.env.DISCORD_BOT_TOKEN) {
+  cfg.channels.discord = {
+    enabled: true,
+    botToken: process.env.DISCORD_BOT_TOKEN
+  };
+}
+require('fs').writeFileSync('/data/openclaw.json', JSON.stringify(cfg, null, 2));
+"
 
 echo "✓ Config written to /data/openclaw.json"
 echo "Config contents:"
